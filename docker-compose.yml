@@ -1,0 +1,55 @@
+version: "3"
+
+networks:
+  mcs_lumen: 
+    driver: bridge
+services:
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: mcs_phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: LNIBsCP9Gj7xF4d3
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+      UPLOAD_LIMIT: 104857600
+      MEMORY_LIMIT: 2G
+      # MAX_EXECUTION_TIME: 600
+    ports:
+      - "6002:80"
+    networks:
+      - mcs_lumen
+  mysql:
+    image: mysql
+    container_name: mcs_mysql
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "6001:3306"
+    volumes:
+      - ../mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: LNIBsCP9Gj7xF4d3
+      MYSQL_DATABASE: lumen
+      MYSQL_USER: tlc_app_3
+      MYSQL_PASSWORD: DLTedTfrVzYbrYv9
+    command: mysqld --log-bin-trust-function-creators=1
+    networks:
+      - mcs_lumen
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mcs_lumen
+    restart: unless-stopped
+    tty: true
+    working_dir: /var/www/app
+    volumes:
+      - ./src:/var/www/app
+    ports:
+      - "9000:9000"
+    networks:
+      - mcs_lumen
